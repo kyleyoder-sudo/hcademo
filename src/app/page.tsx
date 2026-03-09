@@ -55,7 +55,7 @@ export default function HomePage() {
         {/* Parallax image */}
         <motion.div style={{ y: heroY }} className="absolute inset-0">
           <Image
-            src="/images/dance4.jpeg"
+            src="/images/elitedance.avif"
             alt="HCA dancers on stage"
             fill
             className="object-cover object-center"
