@@ -25,8 +25,8 @@ export const programs = [
     id: "dance",
     title: "Dance",
     description:
-      "From preschool creative movement to pre-professional ballet, our dance programs inspire excellence at every level.",
-    image: "/images/P27A0317_edited.jpg",
+      "Technique, performance, artistry.",
+    image: "/images/dance4.jpeg",
     href: "/dance",
     accent: "#4B80A0",
     stats: "42 classes/week",
@@ -35,7 +35,7 @@ export const programs = [
     id: "music",
     title: "Music",
     description:
-      "Private lessons in guitar, piano, violin, cello, viola, and voice with accomplished professional instructors.",
+      "Private lessons with experienced instructors.",
     image: "/images/Timothy%20Frye%20photo.jpg",
     href: "/music",
     accent: "#C9A87A",
@@ -45,7 +45,7 @@ export const programs = [
     id: "art",
     title: "Visual Arts",
     description:
-      "Painting, ceramics, sculpture, and mixed media workshops for all ages — from youth to adult learners.",
+      "Studios, workshops, and hands-on making.",
     image: "/images/image0%20(8).jpeg",
     href: "/art",
     accent: "#ACD3EA",
@@ -55,7 +55,7 @@ export const programs = [
     id: "theatre",
     title: "Theatre",
     description:
-      "Full-scale musical productions in our intimate blackbox Center Stage theater — a hidden gem of Ohio's Amish Country.",
+      "Productions, auditions, and stage experience.",
     image: "/images/Nutcraker_2018_PRINT-90.jpg",
     href: "/theatre",
     accent: "#32566B",
@@ -562,6 +562,10 @@ export const communityPrograms = [
 ];
 
 export const galleryImages = [
+  { src: "/images/dance3.jpeg", alt: "Dance ensemble on stage" },
+  { src: "/images/dance4.jpeg", alt: "Young dancers performing on stage" },
+  { src: "/images/dance2.jpeg", alt: "Solo dance performance under stage lights" },
+  { src: "/images/dance%60.jpeg", alt: "Dance team backstage before a performance" },
   { src: "/images/P27A0317_edited.jpg", alt: "Ballet performance" },
   { src: "/images/IMG_9648.jpg", alt: "Dance recital" },
   { src: "/images/IMG_9176%20(1).jpg", alt: "Performance" },
@@ -582,46 +586,11 @@ export const galleryImages = [
 
 export const navItems = [
   { label: "Home", href: "/" },
-  {
-    label: "Dance",
-    href: "/dance",
-    children: [
-      { label: "Ballet", href: "/dance#ballet" },
-      { label: "Jazz, Tap & Contemporary", href: "/dance#jazz-tap" },
-      { label: "Tumbling", href: "/dance#tumbling" },
-      { label: "Preschool Dance", href: "/dance#preschool" },
-      { label: "Elite Competition", href: "/dance#elite" },
-      { label: "Adult Fitness", href: "/dance#adult" },
-      { label: "Performances", href: "/dance#performances" },
-    ],
-  },
-  {
-    label: "Music",
-    href: "/music",
-    children: [
-      { label: "Private Lessons", href: "/music#lessons" },
-      { label: "Instructors", href: "/music#instructors" },
-    ],
-  },
-  {
-    label: "Art",
-    href: "/art",
-    children: [
-      { label: "Kids Classes", href: "/art#kids" },
-      { label: "Teen After School", href: "/art#teens" },
-      { label: "Adult Workshops", href: "/art#adults" },
-      { label: "Instructors", href: "/art#instructors" },
-    ],
-  },
-  {
-    label: "Theatre",
-    href: "/theatre",
-    children: [
-      { label: "Productions", href: "/theatre#productions" },
-      { label: "Auditions", href: "/theatre#auditions" },
-      { label: "Venue Rental", href: "/theatre#rental" },
-    ],
-  },
+  { label: "Dance", href: "/dance" },
+  { label: "Music", href: "/music" },
+  { label: "Art", href: "/art" },
+  { label: "Theatre", href: "/theatre" },
   { label: "Community", href: "/community" },
+  { label: "Instructors", href: "/instructors" },
   { label: "Contact", href: "/contact" },
 ];
