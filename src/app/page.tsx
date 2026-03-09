@@ -1,513 +1,298 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, ExternalLink, ChevronDown } from "lucide-react";
-import StatsSection from "@/components/StatsCounter";
-import ScrollReveal, { RevealItem } from "@/components/ScrollReveal";
-import { programs, danceInstructors, siteConfig, performances, galleryImages } from "@/lib/data";
-import {
-  staggerContainer,
-  fadeInUp,
-  heroTitle,
-  heroWord,
-  fadeIn,
-  scaleIn,
-} from "@/lib/animations";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import InstructorCard from "@/components/InstructorCard";
+import InstructorDrawer from "@/components/InstructorDrawer";
+import RevealOnScroll from "@/components/RevealOnScroll";
+import { danceInstructors, siteConfig, programs, stats } from "@/lib/data";
+
+// Animated counter
+function Counter({ target, suffix }: { target: number; suffix: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const triggered = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !triggered.current) {
+        triggered.current = true;
+        const duration = 1800;
+        const start = performance.now();
+        const tick = (now: number) => {
+          const p = Math.min((now - start) / duration, 1);
+          const ease = 1 - Math.pow(1 - p, 3);
+          setCount(Math.round(ease * target));
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }, { threshold: 0.3 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
+}
 
 export default function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
-  const titleWords = ["Where", "Art", "Comes", "Alive"];
+  const [activeInstructor, setActiveInstructor] = useState<typeof danceInstructors[0] | null>(null);
 
   return (
     <>
-      {/* ── HERO ── */}
-      <section ref={heroRef} className="relative h-screen min-h-[700px] overflow-hidden">
-        {/* Parallax background */}
-        <motion.div style={{ y: heroY }} className="absolute inset-0 scale-110">
+      <InstructorDrawer instructor={activeInstructor} onClose={() => setActiveInstructor(null)} />
+
+      {/* ─── HERO ─────────────────────────────────────────────────────────── */}
+      <section ref={heroRef} className="relative min-h-screen overflow-hidden">
+        {/* Parallax image */}
+        <motion.div style={{ y: heroY }} className="absolute inset-0">
           <Image
-            src="/images/P27A0317_edited.jpg"
-            alt="HCA Performance"
+            src="/images/dance4.jpeg"
+            alt="HCA dancers on stage"
             fill
             className="object-cover object-center"
             priority
-            quality={90}
+            quality={95}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-hca-dark/90 via-hca-dark/60 to-hca-dark/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-hca-dark via-transparent to-transparent" />
+          {/* Single clean gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/90" />
         </motion.div>
 
-        {/* Hero content */}
-        <motion.div
-          style={{ opacity: heroOpacity }}
-          className="relative z-10 h-full flex flex-col justify-center px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto"
-        >
-          <motion.div
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.2 }}
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-px bg-hca-gold" />
-              <span className="font-grotesk text-hca-gold text-xs tracking-[0.3em] uppercase">
-                Holmes Center for the Arts
-              </span>
-            </div>
-          </motion.div>
+        {/* Content — left-aligned, vertically centered */}
+        <div className="relative z-10 flex min-h-screen items-center px-6 lg:px-16 max-w-7xl mx-auto">
+          <div className="max-w-2xl">
+            {/* Label */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.3 }}
+            >
+              <p className="label-gold mb-6">Holmes Center for the Arts · Millersburg, Ohio</p>
+            </motion.div>
 
-          <motion.h1
-            variants={heroTitle}
-            initial="hidden"
-            animate="visible"
-            className="font-playfair text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-bold leading-[0.9] mb-8 text-shadow-dark perspective-1000"
-          >
-            {titleWords.map((word, i) => (
-              <motion.span
-                key={word}
-                variants={heroWord}
-                className={`block ${i === 1 || i === 2 ? "text-gradient" : "text-hca-cream"}`}
+            {/* Headline */}
+            <motion.h1
+              className="font-playfair text-[clamp(3.5rem,9vw,7.5rem)] font-medium italic leading-[0.88] text-[#F2EDE4]"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              Where Art<br />
+              Takes the<br />
+              Stage.
+            </motion.h1>
+
+            {/* Sub */}
+            <motion.p
+              className="mt-8 font-grotesk text-sm tracking-[0.28em] uppercase text-[#F2EDE4]/50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.9 }}
+            >
+              Dance · Music · Visual Arts · Theatre
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              className="mt-10 flex flex-wrap gap-4"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.1 }}
+            >
+              <a
+                href={siteConfig.registerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#C09050] text-[#060606] font-grotesk text-[0.7rem] tracking-[0.22em] uppercase px-7 py-3.5 hover:bg-[#D4AA70] transition-colors duration-300 font-semibold"
               >
-                {word}
-              </motion.span>
-            ))}
-          </motion.h1>
+                Register for Classes
+              </a>
+              <a
+                href={siteConfig.ticketsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-[#F2EDE4]/40 text-[#F2EDE4] font-grotesk text-[0.7rem] tracking-[0.22em] uppercase px-7 py-3.5 hover:border-[#F2EDE4] transition-colors duration-300"
+              >
+                Buy Tickets →
+              </a>
+            </motion.div>
+          </div>
+        </div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0, duration: 0.7 }}
-            className="font-grotesk text-hca-cream/70 text-lg max-w-md mb-10 leading-relaxed"
-          >
-            Dance. Music. Art. Theatre. World-class education in the heart of Ohio&apos;s Amish Country.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <a
-              href={siteConfig.registerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 px-8 py-4 bg-hca-gold text-hca-dark font-bold hover:bg-hca-gold-light transition-colors duration-200 font-grotesk text-xs tracking-widest uppercase"
-            >
-              Register for Classes
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </a>
-            <a
-              href={siteConfig.ticketsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-4 border border-hca-cream/25 text-hca-cream hover:border-hca-cream/60 hover:bg-white/5 transition-all duration-200 font-grotesk text-xs tracking-widest uppercase"
-            >
-              Buy Tickets
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          </motion.div>
+        {/* Logo — bottom right */}
+        <motion.div
+          className="absolute bottom-8 right-8 z-10 opacity-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          transition={{ delay: 1.5 }}
+        >
+          <div className="relative h-14 w-14">
+            <Image
+              src="/images/HCA-full-logo-DarkBlue.png"
+              alt="HCA"
+              fill
+              className="object-contain brightness-0 invert"
+            />
+          </div>
         </motion.div>
 
         {/* Scroll indicator */}
         <motion.div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 0.8 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-hca-cream/40"
+          transition={{ delay: 1.8 }}
         >
-          <span className="font-grotesk text-xs tracking-widest uppercase">Explore</span>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          >
-            <ChevronDown className="w-5 h-5" />
-          </motion.div>
+          <div className="w-px h-12 bg-gradient-to-b from-[#C09050]/60 to-transparent animate-pulse" />
         </motion.div>
       </section>
 
-      {/* ── STATS ── */}
-      <StatsSection />
+      {/* ─── PROGRAMS ────────────────────────────────────────────────────── */}
+      <section className="grid grid-cols-2 lg:grid-cols-4" style={{ height: "60vh", minHeight: "400px" }}>
+        {programs.map((prog) => (
+          <Link
+            key={prog.id}
+            href={prog.href}
+            className="group relative overflow-hidden"
+          >
+            <Image
+              src={prog.image}
+              alt={prog.title}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              sizes="25vw"
+            />
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/55 group-hover:bg-black/35 transition-colors duration-500" />
+            {/* Gold border bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C09050] scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
 
-      {/* ── PROGRAMS ── */}
-      <section className="section-padding bg-hca-dark relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial from-hca-navy/30 via-transparent to-transparent" />
-        <div className="relative max-w-7xl mx-auto">
-          <ScrollReveal className="text-center mb-16">
-            <div className="flex items-center justify-center gap-4 mb-5">
-              <div className="w-12 h-px bg-hca-gold/50" />
-              <span className="font-grotesk text-hca-gold text-xs tracking-[0.3em] uppercase">
-                Our Programs
-              </span>
-              <div className="w-12 h-px bg-hca-gold/50" />
+            <div className="absolute inset-x-0 bottom-0 p-6">
+              <p className="font-grotesk text-[0.65rem] tracking-[0.28em] uppercase text-[#C09050] mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-400">
+                {prog.description}
+              </p>
+              <p className="font-playfair text-2xl lg:text-3xl italic text-[#F2EDE4]">
+                {prog.title}
+              </p>
             </div>
-            <h2 className="font-playfair text-5xl lg:text-6xl text-hca-cream mb-4">
-              Four Disciplines,
-              <br />
-              <em className="text-gradient">Infinite Possibilities</em>
+          </Link>
+        ))}
+      </section>
+
+      {/* ─── STATS ───────────────────────────────────────────────────────── */}
+      <section className="bg-[#0E0E0E] py-16 lg:py-20 border-y border-[#C09050]/15">
+        <div className="mx-auto max-w-6xl px-6 grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-0 lg:divide-x lg:divide-[#C09050]/15">
+          {stats.map((s) => (
+            <div key={s.label} className="text-center lg:px-8">
+              <div className="font-playfair text-[clamp(2.5rem,5vw,4rem)] text-[#C09050]">
+                <Counter target={s.value} suffix={s.suffix} />
+              </div>
+              <p className="mt-2 font-grotesk text-[0.65rem] tracking-[0.24em] uppercase text-[#6B6560]">
+                {s.label}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── FACULTY ─────────────────────────────────────────────────────── */}
+      <section className="bg-[#060606] py-24 lg:py-32 px-5 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <RevealOnScroll>
+            <p className="label-gold mb-4">The Faculty</p>
+            <h2 className="font-playfair text-[clamp(2.5rem,5vw,4.5rem)] italic text-[#F2EDE4] leading-tight mb-2">
+              Artists who teach.
             </h2>
-            <p className="font-grotesk text-hca-cream/60 text-lg max-w-2xl mx-auto">
-              From preschool movement to pre-professional performance — HCA offers arts education for every age, ability, and aspiration.
+            <p className="font-grotesk text-sm text-[#6B6560] tracking-wide">
+              World-trained. Community-rooted.
             </p>
-          </ScrollReveal>
+          </RevealOnScroll>
 
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
-          >
-            {programs.map((program, i) => (
-              <motion.div
-                key={program.id}
-                variants={fadeInUp}
-                className="group relative overflow-hidden rounded-2xl aspect-[4/3] cursor-pointer"
-              >
-                <Link href={program.href}>
-                  <Image
-                    src={program.image}
-                    alt={program.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-hca-dark/95 via-hca-dark/30 to-transparent" />
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{ background: `radial-gradient(ellipse at bottom left, ${program.accent}33 0%, transparent 70%)` }}
-                  />
-
-                  <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                    <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-400">
-                      <p className="font-grotesk text-xs tracking-[0.3em] uppercase mb-2"
-                        style={{ color: program.accent }}>
-                        {program.stats}
-                      </p>
-                      <h3 className="font-playfair text-4xl lg:text-5xl text-hca-cream font-bold mb-3">
-                        {program.title}
-                      </h3>
-                      <p className="font-grotesk text-hca-cream/60 text-sm leading-relaxed max-w-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
-                        {program.description}
-                      </p>
-                      <div className="flex items-center gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 delay-150">
-                        <span className="font-grotesk text-sm text-hca-cream/80">Explore {program.title}</span>
-                        <ArrowRight className="w-4 h-4 text-hca-cream/80" />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px bg-[#141414]">
+            {danceInstructors.map((inst, i) => (
+              <InstructorCard
+                key={inst.id}
+                instructor={inst}
+                onClick={(ins) => setActiveInstructor(ins)}
+                delay={i * 0.06}
+              />
             ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── MISSION STATEMENT ── */}
-      <section className="py-20 lg:py-32 bg-hca-navy/30 relative overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/images/IMG_9951_edited.jpg"
-            alt="Performance"
-            fill
-            className="object-cover opacity-10"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-hca-dark via-hca-dark/80 to-hca-dark" />
-        </div>
-        <div className="relative max-w-5xl mx-auto px-6 text-center">
-          <ScrollReveal>
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <div className="w-16 h-px bg-hca-gold/40" />
-              <span className="font-trirong text-hca-gold text-sm tracking-[0.3em] uppercase italic">
-                Our Mission
-              </span>
-              <div className="w-16 h-px bg-hca-gold/40" />
-            </div>
-            <blockquote className="font-playfair text-2xl lg:text-4xl text-hca-cream/90 leading-relaxed italic font-light">
-              &ldquo;To provide educational and performing opportunities in the arts for individuals of{" "}
-              <span className="text-gradient not-italic font-semibold">all economic and social backgrounds</span>{" "}
-              within a wholesome, family-oriented atmosphere.&rdquo;
-            </blockquote>
-            <div className="mt-8 font-grotesk text-hca-cream/40 text-sm tracking-widest uppercase">
-              Holmes Center for the Arts · Non-profit 501(c)(3)
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* ── PERFORMANCES ── */}
-      <section className="section-padding bg-hca-dark">
-        <div className="max-w-7xl mx-auto">
-          <ScrollReveal className="text-center mb-16">
-            <div className="flex items-center justify-center gap-4 mb-5">
-              <div className="w-12 h-px bg-hca-gold/50" />
-              <span className="font-grotesk text-hca-gold text-xs tracking-[0.3em] uppercase">
-                On Stage
-              </span>
-              <div className="w-12 h-px bg-hca-gold/50" />
-            </div>
-            <h2 className="font-playfair text-5xl lg:text-6xl text-hca-cream">
-              Unforgettable <em className="text-gradient">Performances</em>
-            </h2>
-          </ScrollReveal>
-
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            {performances.map((perf) => (
-              <motion.div
-                key={perf.title}
-                variants={scaleIn}
-                className="group relative overflow-hidden rounded-2xl"
-              >
-                <div className="aspect-[3/4] relative">
-                  <Image
-                    src={perf.image}
-                    alt={perf.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-hca-dark/95 via-hca-dark/20 to-transparent" />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-grotesk text-xs text-hca-gold tracking-widest uppercase">
-                      {perf.season}
-                    </span>
-                    <span className="text-hca-cream/30">·</span>
-                    <span className="font-grotesk text-xs text-hca-cream/40">{perf.venue}</span>
-                  </div>
-                  <h3 className="font-playfair text-2xl text-hca-cream font-semibold mb-2">
-                    {perf.title}
-                  </h3>
-                  <p className="font-grotesk text-hca-cream/60 text-sm leading-relaxed">
-                    {perf.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── PHOTO GALLERY STRIP ── */}
-      <section className="py-12 overflow-hidden bg-hca-black">
-        <ScrollReveal className="text-center mb-8">
-          <p className="font-grotesk text-hca-cream/30 text-xs tracking-[0.4em] uppercase">
-            Life at HCA
-          </p>
-        </ScrollReveal>
-        <div className="flex gap-4 overflow-hidden">
-          <motion.div
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-            className="flex gap-4 flex-shrink-0"
-          >
-            {[...galleryImages, ...galleryImages].map((img, i) => (
-              <div
-                key={i}
-                className="relative flex-shrink-0 w-64 h-40 rounded-xl overflow-hidden"
-              >
-                <Image
-                  src={img.src}
-                  alt={img.alt}
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-500"
-                  sizes="256px"
-                />
-              </div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── INSTRUCTORS SPOTLIGHT ── */}
-      <section className="section-padding bg-hca-dark">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-12">
-            <ScrollReveal direction="left">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-8 h-px bg-hca-gold/50" />
-                <span className="font-grotesk text-hca-gold text-xs tracking-[0.3em] uppercase">
-                  World-Class Faculty
-                </span>
-              </div>
-              <h2 className="font-playfair text-5xl text-hca-cream">
-                Meet Our <em className="text-gradient">Instructors</em>
-              </h2>
-            </ScrollReveal>
-            <ScrollReveal direction="right" className="hidden md:block">
-              <Link
-                href="/instructors"
-                className="flex items-center gap-2 font-grotesk text-hca-accent hover:text-hca-light transition-colors text-sm"
-              >
-                View All Faculty <ArrowRight className="w-4 h-4" />
-              </Link>
-            </ScrollReveal>
           </div>
 
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6"
-          >
-            {danceInstructors.slice(0, 4).map((instructor) => (
-              <motion.div
-                key={instructor.id}
-                variants={fadeInUp}
-                className="group relative overflow-hidden rounded-2xl aspect-[3/4]"
-              >
-                <Image
-                  src={instructor.image}
-                  alt={instructor.name}
-                  fill
-                  className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-hca-dark/90 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h4 className="font-playfair text-hca-cream font-semibold text-lg leading-tight">
-                    {instructor.name}
-                  </h4>
-                  <p className="font-grotesk text-hca-accent text-xs mt-1">{instructor.role}</p>
-                </div>
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-hca-dark/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6 flex flex-col justify-center">
-                  <p className="font-grotesk text-hca-cream/80 text-xs leading-relaxed line-clamp-6">
-                    {instructor.bio}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <div className="mt-8 text-center md:hidden">
+          <div className="mt-10 text-center">
             <Link
               href="/instructors"
-              className="inline-flex items-center gap-2 font-grotesk text-hca-accent text-sm"
+              className="inline-block font-grotesk text-[0.7rem] tracking-[0.24em] uppercase text-[#C09050] border-b border-[#C09050]/40 pb-0.5 hover:border-[#C09050] transition-colors"
             >
-              View All Faculty <ArrowRight className="w-4 h-4" />
+              Meet All Instructors →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── UPCOMING PRODUCTION BANNER ── */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/images/Nutcraker_2018_PRINT-90.jpg"
-            alt="Theatre Production"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-hca-dark/85" />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-6 text-center">
-          <ScrollReveal>
-            <p className="font-trirong text-hca-gold italic text-sm tracking-widest uppercase mb-4">
-              Summer 2026
-            </p>
-            <h2 className="font-playfair text-5xl lg:text-7xl text-hca-cream font-bold mb-4">
-              The Prince of Egypt
-            </h2>
-            <p className="font-grotesk text-hca-cream/60 text-lg mb-2">
-              Performances June 25–29 · Auditions May 4–8
-            </p>
-            <p className="font-grotesk text-hca-cream/40 text-sm mb-10">
-              Center Stage Theater · Holmes Center for the Arts
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/theatre#auditions"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-hca-gold text-hca-dark font-bold hover:bg-hca-gold-light transition-colors font-grotesk text-xs tracking-widest uppercase"
-              >
-                Audition Information
-              </Link>
+      {/* ─── PERFORMANCE ─────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden" style={{ height: "70vh", minHeight: "500px" }}>
+        <Image
+          src="/images/Nutcraker_2018_PRINT-90.jpg"
+          alt="The Nutcracker at Ohio Star Theater"
+          fill
+          className="object-cover object-center"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-black/60" />
+
+        <div className="absolute inset-0 flex items-end">
+          <div className="mx-auto max-w-7xl w-full px-6 lg:px-16 pb-16 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+            <RevealOnScroll direction="left">
+              <p className="label-gold mb-3">On Stage</p>
+              <h3 className="font-playfair text-[clamp(2.5rem,6vw,5rem)] italic text-[#F2EDE4] leading-tight">
+                The Nutcracker
+              </h3>
+              <p className="mt-2 font-grotesk text-sm text-[#F2EDE4]/50">
+                December · Ohio Star Theater
+              </p>
+            </RevealOnScroll>
+
+            <RevealOnScroll delay={0.15}>
               <a
                 href={siteConfig.ticketsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 border border-hca-cream/25 text-hca-cream hover:border-hca-cream/60 hover:bg-white/5 transition-colors font-grotesk text-xs tracking-widest uppercase"
+                className="inline-block border border-[#C09050] text-[#C09050] font-grotesk text-[0.7rem] tracking-[0.22em] uppercase px-6 py-3 hover:bg-[#C09050] hover:text-[#060606] transition-all duration-300"
               >
-                Buy Tickets
-                <ExternalLink className="w-4 h-4" />
+                Get Tickets →
               </a>
-            </div>
-          </ScrollReveal>
+            </RevealOnScroll>
+          </div>
         </div>
       </section>
 
-      {/* ── CTA STRIP ── */}
-      <section className="py-20 bg-hca-navy">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Register for Classes",
-                description: "Enroll in dance, music, or art classes through our online portal.",
-                href: siteConfig.registerUrl,
-                external: true,
-                variant: "gold",
-              },
-              {
-                title: "Theater Rental",
-                description: "Book the Center Stage blackbox theater for your event or production.",
-                href: "/contact",
-                external: false,
-                variant: "outline",
-              },
-              {
-                title: "Support HCA",
-                description: "Help us serve 633+ students with a tax-deductible donation.",
-                href: "https://www.paypal.com/donate",
-                external: true,
-                variant: "outline",
-              },
-            ].map((item) => (
-              <ScrollReveal key={item.title} className="p-8 border border-white/12 bg-hca-dark/50 hover:border-hca-accent/40 hover:bg-hca-navy/40 transition-all duration-300 group">
-                <h3 className="font-playfair text-2xl text-hca-cream mb-3">{item.title}</h3>
-                <p className="font-grotesk text-hca-cream/50 text-sm leading-relaxed mb-6">
-                  {item.description}
-                </p>
-                {item.external ? (
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 font-grotesk text-sm text-hca-gold group-hover:gap-3 transition-all duration-200"
-                  >
-                    {item.variant === "gold" ? "Get Started" : "Learn More"}
-                    <ArrowRight className="w-4 h-4" />
-                  </a>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className="inline-flex items-center gap-2 font-grotesk text-sm text-hca-gold group-hover:gap-3 transition-all duration-200"
-                  >
-                    Learn More
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                )}
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
+      {/* ─── CTA ─────────────────────────────────────────────────────────── */}
+      <section className="bg-[#060606] py-36 lg:py-48 text-center px-6">
+        <RevealOnScroll>
+          <h2 className="font-playfair text-[clamp(2.5rem,6vw,5rem)] italic text-[#F2EDE4]">
+            Ready to Begin?
+          </h2>
+          <p className="mt-4 font-grotesk text-sm text-[#6B6560] tracking-wide">
+            Classes forming now. All levels welcome.
+          </p>
+          <a
+            href={siteConfig.registerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-10 inline-block bg-[#C09050] text-[#060606] font-grotesk text-[0.7rem] tracking-[0.22em] uppercase px-8 py-4 hover:bg-[#D4AA70] transition-colors duration-300 font-semibold"
+          >
+            Register for Classes
+          </a>
+        </RevealOnScroll>
       </section>
     </>
   );

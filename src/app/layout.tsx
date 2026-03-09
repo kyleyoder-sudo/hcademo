@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import CustomCursor from "@/components/CustomCursor";
 
 export const metadata: Metadata = {
   title: "Holmes Center for the Arts | The Center Stage",
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <CustomCursor />
         <Navigation />
         <main className="min-h-screen">{children}</main>
         <Footer />
