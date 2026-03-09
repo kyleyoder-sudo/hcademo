@@ -36,7 +36,7 @@ export const programs = [
     title: "Music",
     description:
       "Private lessons with experienced instructors.",
-    image: "/images/Timothy%20Frye%20photo.jpg",
+    image: "/images/music.jpg",
     href: "/music",
     accent: "#C9A87A",
     stats: "4 instructors",
@@ -46,7 +46,7 @@ export const programs = [
     title: "Visual Arts",
     description:
       "Studios, workshops, and hands-on making.",
-    image: "/images/image0%20(8).jpeg",
+    image: "/images/art.jpg",
     href: "/art",
     accent: "#ACD3EA",
     stats: "Year-round classes",
